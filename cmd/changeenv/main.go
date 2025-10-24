@@ -54,6 +54,7 @@ Examples:
 To change shell directories directly, wrap with a shell function:
   cenv() { cd "$(changeenv "$1")"; }
 `,
+		Args:          cobra.ArbitraryArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
