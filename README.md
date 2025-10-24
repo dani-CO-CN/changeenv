@@ -12,7 +12,7 @@ This produces a binary named `changeenv` in the current directory.
 
 ## Usage
 
-`changeenv` prints the target directory to standard output. Combine it with `cd` to move the shell to the resolved path. The tool looks for the `dev`, `test`, or `prod` segment in your current path and swaps it with the requested environment:
+`changeenv` prints the target directory to standard output. Combine it with `cd` to move the shell to the resolved path. By default, the tool recognizes `dev`, `test`, and `prod` environment segments in your current path and swaps them with the requested environment:
 
 ```bash
 # Switch from the current dev folder to the matching prod folder.
@@ -27,19 +27,61 @@ cenv() { cd "$(changeenv "$1")"; }
 
 Run `changeenv --help` to see available commands and flags.
 
-### Flags
+## Custom Environments
 
-- `--create` — when used with `configure`, append the shell helper automatically.
+You can add custom environment names beyond the built-in `dev`, `test`, and `prod`. This is useful for regional deployments (`prod-us-east-1`, `test-eu-central-1`) or additional stages (`staging`, `canary`).
 
-Example:
+### Option 1: Config File
+
+Create `~/.cenvrc` with one environment per line:
 
 ```bash
-changeenv prod
+# ~/.cenvrc
+staging
+prod-us-east-1
+test-eu-central-1
+canary
 ```
 
-### Configure shell helper
+Comments are supported (lines starting with `#` or inline after environment names).
 
-Run `changeenv configure` to print the helper function and the suggested commands that append it to your shell configuration file. The command also checks whether the directory containing the `changeenv` binary is already on your `PATH` and prints the export you can add if needed. Use `changeenv configure --create` to append both snippets automatically.
+### Option 2: Environment Variable
+
+Set `CENV_ENVIRONMENTS` with space-separated values:
+
+```bash
+export CENV_ENVIRONMENTS="staging prod-us-east-1 test-eu-central-1"
+```
+
+Add this to your `.bashrc` or `.zshrc` to make it permanent.
+
+### Using Both
+
+Both methods can be used together. Environments are loaded in this order:
+1. Built-in defaults: `dev`, `test`, `prod`
+2. Custom environments from `~/.cenvrc` (if it exists)
+3. Custom environments from `$CENV_ENVIRONMENTS` (if set)
+
+Example usage with custom environments:
+
+```bash
+# Navigate to a regional prod environment
+cd ~/infra/prod-us-east-1/services/app
+
+# Switch to the matching test region
+cenv test-eu-central-1
+# Now in: ~/infra/test-eu-central-1/services/app
+```
+
+## Configure shell helper
+
+Run `changeenv configure` to print the helper function and the suggested commands that append it to your shell configuration file. The command also checks whether the directory containing the `changeenv` binary is already on your `PATH` and prints the export you can add if needed.
+
+Use the `--create` flag to append both snippets automatically:
+
+```bash
+changeenv configure --create
+```
 
 ## Development
 
