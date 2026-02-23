@@ -1,0 +1,102 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: cftoken
+    main: ./cmd/cftoken
+    binary: cftoken
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: cftoken-archive
+    formats:
+      - binary
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Os }}_
+      {{- .Arch }}
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+signs:
+  - cmd: cosign
+    signature: ${artifact}.sig
+    certificate: ${artifact}.pem
+    args:
+      - sign-blob
+      - --yes
+      - --output-signature=${signature}
+      - --output-certificate=${certificate}
+      - ${artifact}
+    artifacts: checksum
+    output: true
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - 'README'
+      - 'typo'
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: 'Enhancements'
+      regexp: '^.*?(refactor|perf|chore)(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Others
+      order: 999
+
+release:
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## cftoken {{ .Tag }}
+
+    Release binaries for cftoken version {{ .Tag }}.
+
+    <details>
+    <summary>Verification</summary>
+
+    Checksums are signed with [Cosign](https://github.com/sigstore/cosign). To verify:
+
+    ```bash
+    # Download the binary and checksum files
+    # Verify the checksums file signature
+    cosign verify-blob \
+      --certificate-identity "https://github.com/dani-CO-CN/cftoken/.github/workflows/main.yml@refs/tags/{{ .Tag }}" \
+      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+      --signature checksums.txt.sig \
+      --certificate checksums.txt.pem \
+      checksums.txt
+
+    # Verify the binary checksum
+    sha256sum --check --ignore-missing checksums.txt
+    ```
+
+    </details>
