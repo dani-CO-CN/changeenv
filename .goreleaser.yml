@@ -6,7 +6,7 @@ before:
 
 builds:
   - id: changeenv
-    main: ./cmd/changenv
+    main: ./cmd/changeenv
     binary: changeenv
     env:
       - CGO_ENABLED=0
