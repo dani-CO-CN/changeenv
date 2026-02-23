@@ -5,9 +5,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: cftoken
-    main: ./cmd/cftoken
-    binary: cftoken
+  - id: changeenv
+    main: ./cmd/changenv
+    binary: changeenv
     env:
       - CGO_ENABLED=0
     goos:
@@ -23,7 +23,7 @@ builds:
       - -X main.date={{.Date}}
 
 archives:
-  - id: cftoken-archive
+  - id: changeenv-archive
     formats:
       - binary
     name_template: >-
@@ -76,9 +76,9 @@ release:
   prerelease: auto
   mode: append
   header: |
-    ## cftoken {{ .Tag }}
+    ## changeenv {{ .Tag }}
 
-    Release binaries for cftoken version {{ .Tag }}.
+    Release binaries for changeenv version {{ .Tag }}.
 
     <details>
     <summary>Verification</summary>
@@ -89,7 +89,7 @@ release:
     # Download the binary and checksum files
     # Verify the checksums file signature
     cosign verify-blob \
-      --certificate-identity "https://github.com/dani-CO-CN/cftoken/.github/workflows/main.yml@refs/tags/{{ .Tag }}" \
+      --certificate-identity "https://github.com/dani-CO-CN/changeenv/.github/workflows/main.yml@refs/tags/{{ .Tag }}" \
       --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
       --signature checksums.txt.sig \
       --certificate checksums.txt.pem \

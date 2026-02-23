@@ -1,4 +1,4 @@
-name: publish cftoken release
+name: publish release
 on:
   push:
     tags: '*'
